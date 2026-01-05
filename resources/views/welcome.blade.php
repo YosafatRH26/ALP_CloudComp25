@@ -42,18 +42,17 @@
 
                     <div class="flex items-center gap-3">
                         @auth
-    @if(auth()->user()->role === 'admin')
-        <a href="{{ route('admin.dashboard') }}"
-           class="px-5 py-2.5 rounded-full bg-slate-800 text-sm font-semibold hover:bg-slate-700 transition-all border border-slate-700">
-            Admin Dashboard
-        </a>
-    @else
-        <a href="{{ route('dashboard') }}"
-           class="px-5 py-2.5 rounded-full bg-slate-800 text-sm font-semibold hover:bg-slate-700 transition-all border border-slate-700">
-            Dashboard
-        </a>
-    @endif
-
+                            @if(auth()->user()->role === 'admin')
+                                <a href="{{ route('admin.dashboard') }}"
+                                   class="px-5 py-2.5 rounded-full bg-slate-800 text-sm font-semibold hover:bg-slate-700 transition-all border border-slate-700">
+                                    Admin Dashboard
+                                </a>
+                            @else
+                                <a href="{{ route('dashboard') }}"
+                                   class="px-5 py-2.5 rounded-full bg-slate-800 text-sm font-semibold hover:bg-slate-700 transition-all border border-slate-700">
+                                    Dashboard
+                                </a>
+                            @endif
                         @else
                             <a href="{{ route('login') }}" class="text-sm font-semibold text-slate-300 hover:text-white transition-colors">Login</a>
                             <a href="{{ route('register') }}" class="px-6 py-2.5 rounded-full bg-sky-500 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 hover:bg-sky-400 hover:-translate-y-0.5 transition-all">Daftar Gratis</a>
@@ -90,24 +89,23 @@
 
                     <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
                         @auth
-    @if(auth()->user()->role === 'admin')
-        <a href="{{ route('admin.dashboard') }}"
-           class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-slate-700 text-lg font-bold text-white">
-            Masuk Dashboard Admin
-        </a>
-    @else
-        <a href="{{ route('cv.create') }}"
-           class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-sky-500 text-lg font-bold text-white shadow-2xl shadow-sky-500/30 hover:bg-sky-400 hover:scale-105 transition-all">
-            Mulai Analisis Sekarang
-        </a>
-    @endif
-@else
-    <a href="{{ route('register') }}"
-       class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-sky-500 text-lg font-bold text-white shadow-2xl shadow-sky-500/30 hover:bg-sky-400 hover:scale-105 transition-all">
-        Mulai Analisis Sekarang — Gratis
-    </a>
-@endauth
-
+                            @if(auth()->user()->role === 'admin')
+                                <a href="{{ route('admin.dashboard') }}"
+                                   class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-slate-700 text-lg font-bold text-white">
+                                    Masuk Dashboard Admin
+                                </a>
+                            @else
+                                <a href="{{ route('cv.create') }}"
+                                   class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-sky-500 text-lg font-bold text-white shadow-2xl shadow-sky-500/30 hover:bg-sky-400 hover:scale-105 transition-all">
+                                    Mulai Analisis Sekarang
+                                </a>
+                            @endif
+                        @else
+                            <a href="{{ route('register') }}"
+                               class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-sky-500 text-lg font-bold text-white shadow-2xl shadow-sky-500/30 hover:bg-sky-400 hover:scale-105 transition-all">
+                                Mulai Analisis Sekarang — Gratis
+                            </a>
+                        @endauth
                     </div>
 
                     {{-- Hero Image/Preview placeholder --}}
@@ -143,20 +141,53 @@
                         <h2 class="text-3xl font-bold text-white mb-4">Fitur Terintegrasi</h2>
                         <p class="text-slate-400">Teknologi yang dirancang untuk mempercepat karirmu.</p>
                     </div>
+                    
+                    {{-- Updated Features Grid (Added new cards here) --}}
                     <div class="grid md:grid-cols-3 gap-8">
-                        {{-- Kartu Fitur bisa menggunakan komponen yang sama dengan iterasi warna --}}
+                        
+                        {{-- Fitur 1: ATS Scoring --}}
                         <div class="p-8 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-sky-500/50 transition-all group">
                             <div class="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                                <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
                             </div>
                             <h3 class="text-xl font-bold text-white mb-3">Instant ATS Scoring</h3>
-                            <p class="text-slate-400 text-sm leading-relaxed">Cek skor CV kamu terhadap standar sistem ATS industri modern dalam hitungan detik.</p>
+                            <p class="text-slate-400 text-sm leading-relaxed">
+                                Cek skor CV kamu terhadap standar sistem ATS industri modern dalam hitungan detik.
+                            </p>
                         </div>
-                        {{-- Tambahkan fitur lainnya di sini --}}
+
+                        {{-- Fitur 2: Keyword Analysis --}}
+                        <div class="p-8 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-sky-500/50 transition-all group">
+                            <div class="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-3">Smart Keyword Analysis</h3>
+                            <p class="text-slate-400 text-sm leading-relaxed">
+                                Deteksi kata kunci yang hilang agar CV-mu lebih mudah ditemukan oleh recruiter dan sistem AI.
+                            </p>
+                        </div>
+
+                        {{-- Fitur 3: Job Role Matching --}}
+                        <div class="p-8 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-sky-500/50 transition-all group">
+                            <div class="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-3">Role Recommendations</h3>
+                            <p class="text-slate-400 text-sm leading-relaxed">
+                                Dapatkan rekomendasi posisi pekerjaan yang paling cocok dengan skill dan pengalamanmu saat ini.
+                            </p>
+                        </div>
+
                     </div>
                 </section>
 
-                {{-- How It Works dengan Visual Line --}}
+                {{-- How It Works --}}
                 <section id="how-it-works" class="mb-32 relative">
                     <div class="text-center mb-16">
                         <h2 class="text-3xl font-bold text-white mb-4">Cara Kerja</h2>
