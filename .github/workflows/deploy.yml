@@ -1,4 +1,4 @@
-name: Deploy to Team6 Server
+name: Deploy to Team6 Server (Update v2)
 
 on:
   push:
