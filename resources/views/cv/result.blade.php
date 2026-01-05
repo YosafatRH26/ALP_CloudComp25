@@ -57,13 +57,23 @@
 
             {{-- Data Processing --}}
             @php
-                $mainSkills = is_string($analysis->main_skills_json) ? (json_decode($analysis->main_skills_json, true) ?? []) : ($analysis->main_skills_json ?? []);
-                $divisionRecs = is_string($analysis->division_recommendations_json) ? (json_decode($analysis->division_recommendations_json, true) ?? []) : ($analysis->division_recommendations_json ?? []);
-                $readinessScores = is_string($analysis->readiness_scores_json) ? (json_decode($analysis->readiness_scores_json, true) ?? []) : ($analysis->readiness_scores_json ?? []);
-                $skillGaps = is_string($analysis->skill_gap_json) ? (json_decode($analysis->skill_gap_json, true) ?? []) : ($analysis->skill_gap_json ?? []);
-                
-                $raw = is_string($analysis->raw_ai_response) ? (json_decode($analysis->raw_ai_response, true) ?? []) : ($analysis->raw_ai_response ?? []);
-                $atsScore = $raw['ats_score'] ?? 0;
+                // Helper function to safe decode JSON
+                $safeDecode = function($data) {
+                    if (is_array($data)) return $data;
+                    if (is_string($data)) {
+                        $decoded = json_decode($data, true);
+                        return is_array($decoded) ? $decoded : [];
+                    }
+                    return [];
+                };
+
+                $mainSkills = $safeDecode($analysis->main_skills_json);
+                $divisionRecs = $safeDecode($analysis->division_recommendations_json);
+                $readinessScores = $safeDecode($analysis->readiness_scores_json);
+                $skillGaps = $safeDecode($analysis->skill_gap_json);
+                $raw = $safeDecode($analysis->raw_ai_response);
+
+                $atsScore = $raw['ats_score'] ?? $analysis->ats_score ?? 0;
                 $experienceLevel = $raw['experience_level'] ?? 'N/A';
                 $achievements = $raw['achievements'] ?? [];
                 $strengths = $raw['strengths'] ?? [];
@@ -136,42 +146,88 @@
                         <span class="text-[10px] text-slate-500 font-normal uppercase tracking-widest">Matching Engine</span>
                     </h3>
                     <div class="space-y-4">
-                        @foreach($divisionRecs as $rec)
-                        <div class="group p-4 rounded-2xl bg-slate-950/40 border border-slate-800 hover:border-sky-500/50 transition-all">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm font-bold text-white">{{ $rec['division_name'] ?? '-' }}</span>
-                                <span class="text-xs font-bold text-sky-400">{{ $rec['keyword_match'] ?? 0 }}% Match</span>
-                            </div>
-                            <p class="text-xs text-slate-400 leading-relaxed">{{ $rec['reason'] ?? '' }}</p>
-                        </div>
-                        @endforeach
+                        @if(empty($divisionRecs))
+                             <p class="text-xs text-slate-500">Belum ada rekomendasi divisi.</p>
+                        @else
+                            @foreach($divisionRecs as $rec)
+                                {{-- Handle jika $rec cuma string nama divisi --}}
+                                @php
+                                    $divName = is_array($rec) ? ($rec['division_name'] ?? '-') : $rec;
+                                    $match = is_array($rec) ? ($rec['keyword_match'] ?? 0) : 0;
+                                    $reason = is_array($rec) ? ($rec['reason'] ?? '') : '';
+                                @endphp
+                                <div class="group p-4 rounded-2xl bg-slate-950/40 border border-slate-800 hover:border-sky-500/50 transition-all">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-sm font-bold text-white">{{ $divName }}</span>
+                                        @if(is_array($rec))
+                                            <span class="text-xs font-bold text-sky-400">{{ $match }}% Match</span>
+                                        @endif
+                                    </div>
+                                    @if($reason)
+                                        <p class="text-xs text-slate-400 leading-relaxed">{{ $reason }}</p>
+                                    @endif
+                                </div>
+                            @endforeach
+                        @endif
                     </div>
                 </div>
 
-                {{-- Readiness Radar --}}
+                {{-- Readiness Radar (FIXED LOOP) --}}
                 <div class="rounded-3xl border border-slate-800 bg-slate-900/40 p-6">
                     <h3 class="text-sm font-bold text-slate-200 mb-5">Readiness & Skill Gaps</h3>
                     <div class="space-y-6">
-                        @foreach($readinessScores as $index => $r)
-                        <div>
-                            <div class="flex justify-between text-[11px] font-bold mb-2">
-                                <span class="text-slate-300">{{ $r['division_name'] }}</span>
-                                <span class="text-emerald-400">{{ $r['score'] }}/100</span>
-                            </div>
-                            <div class="h-1.5 w-full bg-slate-800 rounded-full mb-3">
-                                <div class="h-full bg-emerald-500 rounded-full" style="width: {{ $r['score'] }}%"></div>
-                            </div>
-                            {{-- Corresponding Gap --}}
-                            @if(isset($skillGaps[$index]['missing_skills']))
-                            <div class="flex flex-wrap gap-1.5">
-                                <span class="text-[10px] text-rose-400 font-bold uppercase mr-1">Missing:</span>
-                                @foreach($skillGaps[$index]['missing_skills'] as $ms)
-                                    <span class="text-[10px] text-slate-500">• {{ $ms }}</span>
-                                @endforeach
-                            </div>
-                            @endif
-                        </div>
-                        @endforeach
+                        @if(empty($readinessScores))
+                            <p class="text-xs text-slate-500">Belum ada data readiness score.</p>
+                        @else
+                            {{-- 
+                                Loop Readiness Scores
+                                Format Mockup: "Project Manager": 90
+                                Format AI Real: Mungkin array object.
+                                Kita handle dua-duanya.
+                            --}}
+                            @foreach($readinessScores as $key => $val)
+                                @php
+                                    // Deteksi format: Key-Value (Mockup) atau Array Object (AI)
+                                    if (is_array($val)) {
+                                        $roleName = $val['division_name'] ?? $key;
+                                        $scoreVal = $val['score'] ?? 0;
+                                    } else {
+                                        $roleName = $key;
+                                        $scoreVal = $val;
+                                    }
+                                @endphp
+                                <div>
+                                    <div class="flex justify-between text-[11px] font-bold mb-2">
+                                        <span class="text-slate-300">{{ $roleName }}</span>
+                                        <span class="text-emerald-400">{{ $scoreVal }}/100</span>
+                                    </div>
+                                    <div class="h-1.5 w-full bg-slate-800 rounded-full mb-3">
+                                        <div class="h-full bg-emerald-500 rounded-full" style="width: {{ $scoreVal }}%"></div>
+                                    </div>
+                                    
+                                    {{-- Gap Analysis (Optional) --}}
+                                    @if(isset($skillGaps[$roleName]) || isset($skillGaps[$key]))
+                                        @php 
+                                            // Ambil gap berdasarkan nama role/index
+                                            $gapData = $skillGaps[$roleName] ?? $skillGaps[$key] ?? [];
+                                            // Handle jika gapData cuma array of strings
+                                            $missingList = is_array($gapData) && isset($gapData['missing_skills']) 
+                                                            ? $gapData['missing_skills'] 
+                                                            : (is_array($gapData) ? $gapData : []);
+                                        @endphp
+
+                                        @if(!empty($missingList))
+                                            <div class="flex flex-wrap gap-1.5">
+                                                <span class="text-[10px] text-rose-400 font-bold uppercase mr-1">Missing:</span>
+                                                @foreach($missingList as $ms)
+                                                    <span class="text-[10px] text-slate-500">• {{ $ms }}</span>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    @endif
+                                </div>
+                            @endforeach
+                        @endif
                     </div>
                 </div>
             </div>
@@ -188,12 +244,14 @@
                                 Strengths
                             </h4>
                             <ul class="space-y-3">
-                                @foreach($strengths as $s)
+                                @forelse($strengths as $s)
                                     <li class="text-xs text-slate-300 flex items-start gap-3">
                                         <span class="mt-1 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                         {{ $s }}
                                     </li>
-                                @endforeach
+                                @empty
+                                    <li class="text-xs text-slate-500 italic">No specific strengths detected.</li>
+                                @endforelse
                             </ul>
                         </div>
                         <div class="p-6 bg-rose-500/[0.02]">
@@ -202,12 +260,14 @@
                                 Weaknesses
                             </h4>
                             <ul class="space-y-3">
-                                @foreach($weaknesses as $w)
+                                @forelse($weaknesses as $w)
                                     <li class="text-xs text-slate-300 flex items-start gap-3">
                                         <span class="mt-1 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-rose-500"></span>
                                         {{ $w }}
                                     </li>
-                                @endforeach
+                                @empty
+                                    <li class="text-xs text-slate-500 italic">No critical weaknesses found.</li>
+                                @endforelse
                             </ul>
                         </div>
                     </div>
@@ -218,24 +278,26 @@
                     <div class="rounded-3xl border border-amber-500/20 bg-amber-500/[0.03] p-6">
                         <h4 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-4">Missing Sections</h4>
                         <div class="flex flex-wrap gap-2">
-                            @foreach($missingSections as $m)
+                            @forelse($missingSections as $m)
                                 <span class="px-2 py-1 rounded bg-amber-500/10 text-[10px] text-amber-200 border border-amber-500/20">{{ $m }}</span>
-                            @endforeach
+                            @empty
+                                <span class="text-xs text-slate-500 italic">Complete sections.</span>
+                            @endforelse
                         </div>
                     </div>
                     <div class="rounded-3xl border border-slate-800 bg-slate-900/60 p-6">
                         <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Grammar Check</h4>
                         <div class="grid grid-cols-3 gap-2">
                             <div class="text-center">
-                                <p class="text-lg font-bold text-rose-500">{{ $grammarIssues['critical'] }}</p>
+                                <p class="text-lg font-bold text-rose-500">{{ $grammarIssues['critical'] ?? 0 }}</p>
                                 <p class="text-[9px] text-slate-500 uppercase">Critical</p>
                             </div>
                             <div class="text-center">
-                                <p class="text-lg font-bold text-amber-500">{{ $grammarIssues['minor'] }}</p>
+                                <p class="text-lg font-bold text-amber-500">{{ $grammarIssues['minor'] ?? 0 }}</p>
                                 <p class="text-[9px] text-slate-500 uppercase">Minor</p>
                             </div>
                             <div class="text-center">
-                                <p class="text-lg font-bold text-sky-500">{{ $grammarIssues['spelling'] }}</p>
+                                <p class="text-lg font-bold text-sky-500">{{ $grammarIssues['spelling'] ?? 0 }}</p>
                                 <p class="text-[9px] text-slate-500 uppercase">Typos</p>
                             </div>
                         </div>
@@ -245,7 +307,7 @@
 
             {{-- Conclusion & Action Items --}}
             <div class="rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl relative overflow-hidden z-10">
-                {{-- FIXED: Background blur tidak menghalangi button (pointer-events-none) --}}
+                {{-- Background blur tidak menghalangi button (pointer-events-none) --}}
                 <div class="absolute top-0 right-0 w-64 h-64 bg-sky-500/5 blur-3xl rounded-full pointer-events-none"></div>
                 
                 <h3 class="text-xl font-bold text-white mb-4 relative z-10">Kesimpulan & Langkah Perbaikan</h3>
@@ -259,7 +321,7 @@
                         <ul class="space-y-3">
                             @forelse($suggestedImprovements as $si)
                                 <li class="text-xs text-slate-300 flex items-center gap-3">
-                                    <svg class="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                    <svg class="w-4 h-4 text-sky-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                                     {{ $si }}
                                 </li>
                             @empty
@@ -270,7 +332,6 @@
                     <div class="flex flex-col justify-end items-end gap-4">
                         <span class="text-[10px] text-slate-500 uppercase">Submission Ref: {{ $analysis->cv_submission_id }}</span>
                         @if(auth()->user()->role === 'user')
-                            {{-- FIXED: Button Z-Index & Hover --}}
                             <a href="{{ route('cv.create') }}" class="relative z-20 w-full md:w-auto text-center px-8 py-3 rounded-2xl bg-white text-slate-950 font-bold text-sm hover:bg-sky-400 hover:text-white transition-all shadow-lg">
                                 Re-upload & Upgrade CV
                             </a>
