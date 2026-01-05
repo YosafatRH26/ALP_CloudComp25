@@ -37,13 +37,17 @@ class CvController extends Controller
      * STORE & ANALYZE CV (REAL AI)
      * ========================= */
     public function store(Request $request)
-    {
-        // 1. Validasi Input
-        $request->validate([
-            'cv' => 'required|file|mimes:pdf,doc,docx,txt|max:10240', // Max 10MB
-            'language' => 'required|in:id,en',
-            'analysis_type' => 'required|in:kepanitiaan,professional',
-        ]);
+{
+    // TAMBAHKAN INI DI BARIS PERTAMA FUNCTION STORE
+    // Agar proses tidak mati (timeout) saat menunggu AI (maks 2 menit)
+    set_time_limit(120); 
+
+    // 1. Validasi Input
+    $request->validate([
+        'cv' => 'required|file|mimes:pdf,doc,docx,txt|max:10240',
+        'language' => 'required|in:id,en',
+        'analysis_type' => 'required|in:kepanitiaan,professional',
+    ]);
 
         $file = $request->file('cv');
 

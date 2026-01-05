@@ -1,4 +1,33 @@
 <x-app-layout>
+    <div class="py-12 bg-slate-950 min-h-screen">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+            
+            {{-- TAMBAHKAN KODE INI UNTUK MELIHAT ERROR --}}
+            @if(session('error'))
+                <div class="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center gap-3">
+                    <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <div>
+                        <span class="font-bold block">Gagal:</span>
+                        {{ session('error') }}
+                    </div>
+                </div>
+            @endif
+
+            {{-- TAMBAHKAN KODE INI UNTUK MELIHAT ERROR VALIDASI --}}
+            @if($errors->any())
+                <div class="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400">
+                    <ul class="list-disc list-inside text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            {{-- ... Form Upload Anda di bawah sini ... --}}
+            <div class="bg-slate-900 overflow-hidden shadow-xl sm:rounded-3xl border border-slate-800">
+                {{-- ... --}}
+<x-app-layout>
     <div class="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100 relative overflow-hidden">
         {{-- Background Glow --}}
         <div class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-sky-500/10 blur-[120px] rounded-full pointer-events-none"></div>
