@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class CvAnalysis extends Model
 {
+    protected $table = 'cv_analyses'; // Explicitly define table name
+
     protected $fillable = [
         'cv_submission_id',
         'resume_score',
@@ -24,14 +26,16 @@ class CvAnalysis extends Model
         'skill_gap_json'                => 'array',
         'readiness_scores_json'         => 'array',
         'raw_ai_response'               => 'array',
+        'resume_score'                  => 'integer',
+        'ats_score'                     => 'integer',
     ];
 
     public function cvSubmission()
     {
-        return $this->belongsTo(CvSubmission::class);
+        return $this->belongsTo(CvSubmission::class, 'cv_submission_id');
     }
 
-    // Cek apakah CV ini milik user tertentu
+    // Helper untuk cek kepemilikan
     public function isOwnedBy($userId)
     {
         return $this->cvSubmission && $this->cvSubmission->user_id == $userId;

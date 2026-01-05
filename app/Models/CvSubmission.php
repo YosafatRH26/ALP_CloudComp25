@@ -11,7 +11,6 @@ class CvSubmission extends Model
 
     protected $table = 'cv_submissions';
 
-    // PERBAIKAN: Pastikan 'is_submitted_to_admin' dan 'submitted_at' ada di sini!
     protected $fillable = [
         'user_id',
         'stored_path',
@@ -19,8 +18,8 @@ class CvSubmission extends Model
         'input_mode',
         'language',
         'analysis_mode',
-        'is_submitted_to_admin', // <--- PENTING
-        'submitted_at',          // <--- PENTING
+        'is_submitted_to_admin',
+        'submitted_at',
     ];
 
     protected $casts = [
@@ -35,6 +34,7 @@ class CvSubmission extends Model
 
     public function analysis()
     {
+        // Relasi ke CvAnalysis
         return $this->hasOne(CvAnalysis::class, 'cv_submission_id');
     }
 }

@@ -8,7 +8,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 
 /*
 |--------------------------------------------------------------------------
-| PUBLIC
+| PUBLIC ROUTES
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
@@ -17,63 +17,71 @@ Route::get('/', function () {
 
 /*
 |--------------------------------------------------------------------------
-| AUTH + VERIFIED
+| AUTHENTICATED & VERIFIED ROUTES
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | USER
+    | USER ROUTES (Role: User)
     |--------------------------------------------------------------------------
     */
     Route::middleware('role:user')->group(function () {
 
-        // Dashboard user
+        // --- DASHBOARD ---
         Route::get('/dashboard', function () {
             return view('dashboard');
         })->name('dashboard');
 
-        // Profile
+        // --- PROFILE ---
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-        // CV (user)
-        Route::get('/cv', [CvController::class, 'create'])->name('cv.create');
-        Route::post('/cv', [CvController::class, 'store'])->name('cv.store');
-        Route::get('/cv/{analysis}/result', [CvController::class, 'result'])->name('cv.result');
+        // --- CV ANALYSIS FLOW ---
+        
+        // 1. Form Upload
+        Route::get('/cv/upload', [CvController::class, 'create'])->name('cv.create');
+        
+        // 2. Proses Upload & Analyze
+        Route::post('/cv/analyze', [CvController::class, 'store'])->name('cv.store');
+        
+        // 3. Halaman Hasil (Menggunakan Model Binding {analysis})
+        Route::get('/cv/result/{analysis}', [CvController::class, 'result'])->name('cv.result');
+        
+        // 4. Halaman History
         Route::get('/cv/history', [CvController::class, 'history'])->name('cv.history');
-        Route::delete('/cv/{analysis}/history', [CvController::class, 'destroyHistory'])->name('cv.history.delete');
-        Route::post('/cv/{submission}/push-to-admin', [CvController::class, 'submitToAdmin'])
-            ->name('cv.push-to-admin');
+        
+        // 5. Hapus History (Menggunakan ID biasa {id})
+        Route::delete('/cv/history/{id}', [CvController::class, 'destroyHistory'])->name('cv.history.delete');
+        
+        // 6. Submit ke Admin (Menggunakan ID biasa {id})
+        Route::post('/cv/submit/{id}', [CvController::class, 'submitToAdmin'])->name('cv.push-to-admin');
 
     });
 
     /*
     |--------------------------------------------------------------------------
-    | ADMIN (wrapped in auth + verified + role:admin)
+    | ADMIN ROUTES (Role: Admin)
     |--------------------------------------------------------------------------
     */
     Route::prefix('admin')
-    ->name('admin.')
-    ->middleware('role:admin')
-    ->group(function () {
+        ->name('admin.')
+        ->middleware('role:admin')
+        ->group(function () {
 
-        // ✅ STATIC DULU
-        Route::get('/cv/compare', [AdminCvController::class, 'compareForm'])
-            ->name('cv.compare.form');
+            // --- ADMIN DASHBOARD ---
+            Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        Route::post('/cv/compare', [AdminCvController::class, 'compareResult'])
-            ->name('cv.compare');
+            // --- CV COMPARISON ---
+            Route::get('/cv/compare', [AdminCvController::class, 'compareForm'])->name('cv.compare.form');
+            Route::post('/cv/compare', [AdminCvController::class, 'compareResult'])->name('cv.compare');
 
-        // ❗ DYNAMIC PALING BAWAH
-        Route::get('/cv/{analysis}', [CvController::class, 'result'])
-            ->name('cv.result');
-
-        Route::get('/dashboard', [AdminDashboardController::class, 'index'])
-            ->name('dashboard');
-    });
+            // --- VIEW USER CV (ADMIN MODE) ---
+            // Kita menggunakan controller yang sama dengan user, tapi route name berbeda
+            Route::get('/cv/view/{analysis}', [CvController::class, 'result'])->name('cv.result'); 
+        });
 
 });
 
