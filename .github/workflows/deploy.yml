@@ -19,7 +19,7 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
-        # Ini akan otomatis menjadi: /home/team6/web/team6.my.id/public_html
+        # GANTI 'admin' dengan username Anda jika beda
         target: "/home/${{ secrets.SSH_USERNAME }}/web/team6.my.id/public_html"
         source: "."
         strip_components: 0
@@ -35,10 +35,16 @@ jobs:
           # Masuk ke folder web
           cd /home/${{ secrets.SSH_USERNAME }}/web/team6.my.id/public_html
           
-          # Install Library PHP (Composer)
-          composer install --no-interaction --prefer-dist --optimize-autoloader
+          # --- PERBAIKAN: DOWNLOAD COMPOSER MANUAL ---
+          # Karena server tidak kenal perintah 'composer', kita download file-nya langsung
+          curl -sS https://getcomposer.org/installer | php
           
-          # Fix Permission (PENTING untuk Laravel di Hestia)
+          # Sekarang kita pakai 'php composer.phar' (bukan cuma 'composer')
+          php composer.phar install --no-interaction --prefer-dist --optimize-autoloader
+          
+          # --- END PERBAIKAN ---
+          
+          # Permissions
           chmod -R 775 storage bootstrap/cache
           chown -R ${{ secrets.SSH_USERNAME }}:${{ secrets.SSH_USERNAME }} .
           
