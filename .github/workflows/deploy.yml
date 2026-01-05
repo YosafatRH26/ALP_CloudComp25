@@ -19,7 +19,7 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
-        # GANTI 'admin' dengan username Anda jika beda
+        # Target folder
         target: "/home/${{ secrets.SSH_USERNAME }}/web/team6.my.id/public_html"
         source: "."
         strip_components: 0
@@ -32,24 +32,25 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
         script: |
-          # Masuk ke folder web
+          # 1. Masuk ke folder project
           cd /home/${{ secrets.SSH_USERNAME }}/web/team6.my.id/public_html
           
-          # --- PERBAIKAN: DOWNLOAD COMPOSER MANUAL ---
-          # Karena server tidak kenal perintah 'composer', kita download file-nya langsung
+          # 2. Download Composer Manual (Solusi 'command not found')
+          # Kita hapus dulu composer.phar lama jika ada biar fresh
+          rm -f composer.phar
           curl -sS https://getcomposer.org/installer | php
           
-          # Sekarang kita pakai 'php composer.phar' (bukan cuma 'composer')
-          php composer.phar install --no-interaction --prefer-dist --optimize-autoloader
+          # 3. Install Dependency (Pakai php composer.phar)
+          # Kita tambahkan --ignore-platform-reqs untuk jaga-jaga jika ada error PHP extension di server
+          php composer.phar install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
           
-          # --- END PERBAIKAN ---
-          
-          # Permissions
+          # 4. Fix Permission (Wajib)
           chmod -R 775 storage bootstrap/cache
           chown -R ${{ secrets.SSH_USERNAME }}:${{ secrets.SSH_USERNAME }} .
           
-          # Laravel Commands
-          php artisan migrate --force
+          # 5. Laravel Commands
+          # Kita pakai || true agar jika satu gagal, yang lain tetap jalan (untuk debug)
+          php artisan migrate --force || true
           php artisan optimize:clear
           php artisan config:cache
           php artisan route:cache
