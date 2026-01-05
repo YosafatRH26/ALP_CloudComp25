@@ -11,12 +11,12 @@
             <div class="mb-10 flex items-center justify-between">
                 <div>
                     <div class="flex items-center gap-3 mb-3">
-                        <a href="{{ route('cv.history') }}" 
+                        <a href="{{ route('admin.dashboard') }}" 
                            class="inline-flex items-center gap-2 text-slate-400 hover:text-sky-400 transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                             </svg>
-                            <span class="text-sm font-medium">Back to History</span>
+                            <span class="text-sm font-medium">Back to Dashboard</span>
                         </a>
                     </div>
                     <h1 class="text-3xl sm:text-4xl font-bold text-white mb-3">
