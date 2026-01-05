@@ -69,7 +69,6 @@
                 @forelse($analysis as $rank => $candidate)
 
                     @php
-                        // PERBAIKAN DI SINI:
                         // Ambil data raw
                         $rawDivisions = $candidate->division_recommendations_json;
 
@@ -83,7 +82,7 @@
                         // Pastikan variabel adalah array (handling null)
                         $divisions = $divisions ?? [];
 
-                        // Logika top 3
+                        // Logika top 3 untuk styling
                         $isTopThree = $rank < 3;
                     @endphp
 
