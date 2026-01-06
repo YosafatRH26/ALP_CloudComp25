@@ -16,7 +16,8 @@ class CvAnalysisService
     public function analyze(string $cvText, string $mode = 'committee', string $language = 'id'): array
     {
         // 1. API KEY Check
-        $apiKey = env('GROQ_API_KEY');
+        // Panggil dari config yang baru kita buat
+$apiKey = config('services.groq.key');
         if (!$apiKey) {
             throw new RuntimeException('GROQ_API_KEY belum diset di .env');
         }
