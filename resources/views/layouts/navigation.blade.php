@@ -26,8 +26,6 @@
                            class="text-sm {{ request()->routeIs('admin.dashboard') ? 'text-sky-400' : 'text-slate-300' }}">
                             Admin Panel
                         </a>
-
-                    
                     @endif
                 </div>
             </div>
