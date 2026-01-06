@@ -8,7 +8,9 @@ use Illuminate\Http\Request;
 
 class AdminDashboardController extends Controller
 {
-    // Halaman Dashboard (Filter & View Only)
+    /**
+     * Halaman Dashboard (Filter & View Only)
+     */
     public function index(Request $request)
     {
         $selectedMode = $request->analysis_mode;
@@ -16,12 +18,15 @@ class AdminDashboardController extends Controller
 
         $query = CvAnalysis::with(['cvSubmission.user'])
             ->whereHas('cvSubmission', function ($q) use ($selectedMode) {
+                // Hanya ambil CV yang sudah di-Push ke Admin
                 $q->where('is_submitted_to_admin', true);
+
                 if ($selectedMode) {
                     $q->where('analysis_mode', $selectedMode);
                 }
             });
 
+        // Filter Division berdasarkan keyword di dalam JSON
         if ($selectedDivision) {
             $query->where(function ($q) use ($selectedDivision) {
                 $q->whereRaw(
@@ -43,7 +48,9 @@ class AdminDashboardController extends Controller
         ));
     }
 
-    // Halaman Pemilihan untuk Compare (Halaman dengan Checkbox)
+    /**
+     * Halaman Pemilihan untuk Compare (Halaman dengan Checkbox)
+     */
     public function compareSelection()
     {
         $analysis = CvAnalysis::with(['cvSubmission.user'])
@@ -53,11 +60,15 @@ class AdminDashboardController extends Controller
             ->orderByDesc('resume_score')
             ->get();
 
-        // Mengarah ke resources/views/admin/compare-selection.blade.php
-        return view('admin.compare-selection', compact('analysis'));
+        /** * FIX: Mengirimkan variabel dengan nama 'candidates' 
+         * agar sesuai dengan pemanggilan {{ count($candidates) }} di view
+         */
+        return view('admin.compare-selection', ['candidates' => $analysis]);
     }
 
-    // Proses Logika Compare (Halaman Hasil Side-by-Side)
+    /**
+     * Proses Logika Compare (Halaman Hasil Side-by-Side)
+     */
     public function compare(Request $request)
     {
         $request->validate([
