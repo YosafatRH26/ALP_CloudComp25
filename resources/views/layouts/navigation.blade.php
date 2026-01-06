@@ -27,10 +27,7 @@
                             Admin Panel
                         </a>
 
-                        <a href="{{ route('admin.cv.compare.form') }}"
-                           class="text-sm {{ request()->routeIs('admin.cv.compare.form') ? 'text-sky-400' : 'text-slate-300' }}">
-                            Compare CV
-                        </a>
+                    
                     @endif
                 </div>
             </div>
