@@ -8,7 +8,7 @@
             <div class="flex justify-between items-center mb-10">
                 <div>
                     <h1 class="text-3xl font-extrabold text-white">Versus <span class="text-indigo-400">Comparison</span></h1>
-                    <p class="text-slate-400 text-sm mt-1">Perbandingan kompetensi kandidat pilihan.</p>
+                    <p class="text-slate-400 text-sm mt-1">Perbandingan kompetensi dan keunggulan kandidat.</p>
                 </div>
                 <a href="{{ route('admin.cv.selection') }}" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-semibold transition-all text-slate-300">
                     &larr; Pilih Ulang
@@ -21,28 +21,20 @@
                     VS
                 </div>
 
-                @php $maxScore = $candidates->max('resume_score'); @endphp
-
                 @foreach($candidates as $candidate)
                     @php
-                        $skills = is_string($candidate->main_skills_json) 
-                            ? json_decode($candidate->main_skills_json, true) 
-                            : $candidate->main_skills_json;
+                        $isWinner = $candidate->resume_score == $candidates->max('resume_score');
                         
-                        $isWinner = $candidate->resume_score == $maxScore;
+                        // Decode Skills
+                        $skills = is_string($candidate->main_skills_json) ? json_decode($candidate->main_skills_json, true) : $candidate->main_skills_json;
+                        
+                        // Ambil Strengths (Mencoba beberapa kemungkinan nama kolom/field)
+                        $strengths = $candidate->strengths ?? $candidate->key_strengths ?? [];
+                        if (is_string($strengths)) $strengths = json_decode($strengths, true);
                     @endphp
 
-                    <div class="bg-slate-900/50 backdrop-blur-xl border {{ $isWinner ? 'border-amber-500/50 shadow-2xl shadow-amber-500/10' : 'border-slate-800' }} rounded-[2.5rem] p-8 transition-all hover:scale-[1.01]">
+                    <div class="bg-slate-900/50 backdrop-blur-xl border {{ $isWinner ? 'border-amber-500/50 shadow-2xl shadow-amber-500/10' : 'border-slate-800' }} rounded-[2.5rem] p-8 transition-all hover:scale-[1.01] flex flex-col h-full">
                         
-                        {{-- Winner Tag --}}
-                        @if($isWinner)
-                            <div class="flex justify-center mb-4">
-                                <span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                                    ⭐ Best Match
-                                </span>
-                            </div>
-                        @endif
-
                         <div class="text-center border-b border-slate-800/50 pb-8">
                             <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center text-3xl font-bold text-sky-400 mb-4 border border-slate-700 shadow-xl">
                                 {{ substr($candidate->cvSubmission->user->name, 0, 1) }}
@@ -58,35 +50,42 @@
                             </div>
                         </div>
 
-                        <div class="py-8 space-y-8">
-                            {{-- Core Skills --}}
+                        <div class="py-8 space-y-10 flex-grow">
+                            {{-- CORE SKILLS --}}
                             <div>
-                                <h4 class="text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-widest text-center">Core Skills</h4>
+                                <h4 class="text-[10px] uppercase font-bold text-indigo-400 mb-4 tracking-widest text-center">Core Skills</h4>
                                 <div class="flex flex-wrap justify-center gap-2">
-                                    @forelse($skills ?? [] as $skill)
+                                    @foreach($skills ?? [] as $skill)
                                         <span class="px-3 py-1 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded-lg text-[11px] font-medium">
                                             {{ is_array($skill) ? ($skill['name'] ?? $skill['skill_name'] ?? '-') : $skill }}
                                         </span>
-                                    @empty
-                                        <span class="text-slate-600 text-xs italic">No skills listed</span>
-                                    @endforelse
+                                    @endforeach
                                 </div>
                             </div>
-                            
-                            {{-- AI Summary Profile (Ganti Key Strengths yang kosong) --}}
+
+                            {{-- STRENGTHS (Kelebihan) --}}
                             <div>
-                                <h4 class="text-[10px] uppercase font-bold text-slate-500 mb-3 tracking-widest text-center">Candidate Summary</h4>
-                                <div class="bg-slate-950/40 rounded-2xl p-4 border border-slate-800/50">
-                                    <p class="text-xs text-slate-400 leading-relaxed italic text-center">
-                                        "{{ Str::limit($candidate->summary_profile ?? 'No specific analysis available.', 180) }}"
-                                    </p>
-                                </div>
+                                <h4 class="text-[10px] uppercase font-bold text-emerald-400 mb-4 tracking-widest text-center">Strengths</h4>
+                                <ul class="space-y-3">
+                                    {{-- Jika data strengths berbentuk array --}}
+                                    @if(is_array($strengths) && count($strengths) > 0)
+                                        @foreach($strengths as $strength)
+                                            <li class="flex items-start gap-3 bg-emerald-500/5 p-3 rounded-xl border border-emerald-500/10">
+                                                <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                <span class="text-xs text-slate-300">{{ is_array($strength) ? ($strength['point'] ?? $strength['strength'] ?? '-') : $strength }}</span>
+                                            </li>
+                                        @endforeach
+                                    @else
+                                        {{-- Jika data tidak ada, kita tampilkan placeholder yang lebih profesional --}}
+                                        <li class="text-center text-xs text-slate-600 italic">No specific strengths listed in analysis.</li>
+                                    @endif
+                                </ul>
                             </div>
                         </div>
 
-                        <div class="pt-2">
+                        <div class="pt-6">
                             <a href="{{ route('admin.cv.result', $candidate->id) }}" class="group block w-full py-4 bg-slate-800 hover:bg-indigo-600 rounded-2xl text-center text-sm font-bold text-white transition-all shadow-lg">
-                                View Full Profile Details <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+                                Full Analysis Details &rarr;
                             </a>
                         </div>
                     </div>
