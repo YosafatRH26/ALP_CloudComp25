@@ -38,32 +38,36 @@ class AdminDashboardController extends Controller
     /**
      * Halaman Pemilihan dengan Fitur Filter Kategori
      */
-    public function compareSelection(Request $request)
-    {
-        $selectedDivision = $request->division;
+   public function compareSelection(Request $request)
+{
+    // Mengambil kata kunci dari input text bernama 'search'
+    $search = $request->search;
 
-        $query = CvAnalysis::with(['cvSubmission.user'])
-            ->whereHas('cvSubmission', function ($q) {
-                $q->where('is_submitted_to_admin', true);
+    $query = CvAnalysis::with(['cvSubmission.user'])
+        ->whereHas('cvSubmission', function ($q) {
+            $q->where('is_submitted_to_admin', true);
+        });
+
+    // Logika Pencarian Tekstual
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->whereRaw(
+                "LOWER(division_recommendations_json) LIKE ?",
+                ['%' . strtolower($search) . '%']
+            )
+            ->orWhereHas('cvSubmission.user', function($u) use ($search) {
+                $u->where('name', 'LIKE', '%' . $search . '%');
             });
-
-        // Logika Filter Kategori
-        if ($selectedDivision) {
-            $query->where(function ($q) use ($selectedDivision) {
-                $q->whereRaw(
-                    "LOWER(division_recommendations_json) LIKE ?",
-                    ['%' . strtolower($selectedDivision) . '%']
-                );
-            });
-        }
-
-        $analysis = $query->orderByDesc('resume_score')->get();
-
-        return view('admin.compare-selection', [
-            'candidates' => $analysis,
-            'selectedDivision' => $selectedDivision
-        ]);
+        });
     }
+
+    $analysis = $query->orderByDesc('resume_score')->get();
+
+    return view('admin.compare-selection', [
+        'candidates' => $analysis,
+        'search' => $search
+    ]);
+}
 
     public function compare(Request $request)
     {

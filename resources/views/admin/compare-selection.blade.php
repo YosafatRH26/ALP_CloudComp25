@@ -2,30 +2,31 @@
     <div class="min-h-screen bg-slate-950 text-slate-100 py-12 relative">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             
-            {{-- Header & Filter Section --}}
+            {{-- Header & Search Section --}}
             <div class="mb-10 bg-slate-900/50 p-8 rounded-[2rem] border border-slate-800">
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                     <div>
                         <h1 class="text-3xl font-bold text-white tracking-tight">Select <span class="text-indigo-400">Candidates</span></h1>
-                        <p class="text-slate-400 mt-1 text-sm">Pilih <strong>tepat 2</strong> kandidat dari kategori yang sama atau berbeda.</p>
+                        <p class="text-slate-400 mt-1 text-sm">Cari kategori (misal: Marketing) lalu pilih <strong>tepat 2</strong> kandidat.</p>
                     </div>
 
-                    {{-- Form Filter --}}
-                    <form action="{{ route('admin.cv.selection') }}" method="GET" class="flex flex-wrap items-end gap-3">
-                        <div class="w-full sm:w-64">
-                            <label class="text-[10px] uppercase font-bold text-slate-500 mb-2 block ml-1">Filter by Category</label>
-                            <select name="division" onchange="this.form.submit()" 
-                                    class="w-full bg-slate-950 border-slate-800 rounded-xl text-sm text-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
-                                <option value="">All Categories</option>
-                                <option value="Marketing" {{ request('division') == 'Marketing' ? 'selected' : '' }}>Marketing</option>
-                                <option value="Software Engineer" {{ request('division') == 'Software Engineer' ? 'selected' : '' }}>Software Engineer</option>
-                                <option value="Human Resources" {{ request('division') == 'Human Resources' ? 'selected' : '' }}>Human Resources</option>
-                                <option value="Finance" {{ request('division') == 'Finance' ? 'selected' : '' }}>Finance</option>
-                                <option value="Sales" {{ request('division') == 'Sales' ? 'selected' : '' }}>Sales</option>
-                            </select>
+                    {{-- Input Text Filter --}}
+                    <form action="{{ route('admin.cv.selection') }}" method="GET" class="w-full lg:w-96">
+                        <div class="relative group">
+                            <input type="text" 
+                                   name="search" 
+                                   value="{{ request('search') }}" 
+                                   placeholder="Search category or name..." 
+                                   class="w-full bg-slate-950 border-slate-800 rounded-2xl py-3.5 pl-5 pr-12 text-sm text-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-slate-600">
+                            
+                            <button type="submit" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-indigo-400 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            </button>
                         </div>
-                        @if(request('division'))
-                            <a href="{{ route('admin.cv.selection') }}" class="px-4 py-2.5 text-sm text-slate-500 hover:text-white transition-colors">Reset</a>
+                        @if(request('search'))
+                            <div class="mt-2 flex justify-end">
+                                <a href="{{ route('admin.cv.selection') }}" class="text-[10px] text-slate-500 hover:text-white uppercase font-bold tracking-widest">Clear Search</a>
+                            </div>
                         @endif
                     </form>
                 </div>
@@ -34,11 +35,15 @@
             <form action="{{ route('admin.cv.compare') }}" method="POST" id="compareForm">
                 @csrf
                 
-                {{-- Action Bar (Sticky Info) --}}
+                {{-- Action Bar --}}
                 <div class="mb-8 flex items-center justify-between bg-indigo-500/5 border border-indigo-500/20 p-6 rounded-2xl">
                     <div class="flex items-center gap-6">
-                        <div class="text-sm text-slate-400">
-                            Showing: <span class="text-white font-bold">{{ count($candidates) }}</span> Candidates
+                        <div class="text-sm">
+                            @if(request('search'))
+                                <span class="text-slate-500">Results for:</span> <span class="text-indigo-400 font-bold">"{{ request('search') }}"</span>
+                            @else
+                                <span class="text-slate-500">Showing:</span> <span class="text-white font-bold">{{ count($candidates) }}</span> Candidates
+                            @endif
                         </div>
                         <div class="h-4 w-px bg-slate-800"></div>
                         <div class="text-sm">
@@ -84,7 +89,8 @@
                         </div>
                     @empty
                         <div class="col-span-full py-20 text-center bg-slate-900/20 border border-dashed border-slate-800 rounded-[2rem]">
-                            <p class="text-slate-500">Tidak ada kandidat ditemukan untuk kategori ini.</p>
+                            <svg class="w-12 h-12 text-slate-700 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <p class="text-slate-500">No candidates found matching your search.</p>
                         </div>
                     @endforelse
                 </div>
