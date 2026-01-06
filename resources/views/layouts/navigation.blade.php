@@ -64,7 +64,7 @@
         {{-- Admin menu --}}
         @if(auth()->user()->role === 'admin')
             <a href="{{ route('admin.dashboard') }}" class="block text-slate-300">Admin Panel</a>
-            <a href="{{ route('admin.cv.compare.form') }}" class="block text-slate-300">Compare CV</a>
+            
         @endif
 
         <form method="POST" action="{{ route('logout') }}">
