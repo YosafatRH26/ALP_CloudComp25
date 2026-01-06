@@ -8,7 +8,7 @@
             <div class="flex justify-between items-center mb-10">
                 <div>
                     <h1 class="text-3xl font-extrabold text-white">Versus <span class="text-indigo-400">Comparison</span></h1>
-                    <p class="text-slate-400 text-sm mt-1">Perbandingan kompetensi dan keunggulan kandidat pilihan.</p>
+                    <p class="text-slate-400 text-sm mt-1">Perbandingan kompetensi kandidat pilihan.</p>
                 </div>
                 <a href="{{ route('admin.cv.selection') }}" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-semibold transition-all text-slate-300">
                     &larr; Pilih Ulang
@@ -25,16 +25,10 @@
 
                 @foreach($candidates as $candidate)
                     @php
-                        // Helper untuk decode JSON Skills
                         $skills = is_string($candidate->main_skills_json) 
                             ? json_decode($candidate->main_skills_json, true) 
                             : $candidate->main_skills_json;
                         
-                        // Helper untuk decode JSON Strengths
-                        $strengths = is_string($candidate->strengths_json) 
-                            ? json_decode($candidate->strengths_json, true) 
-                            : $candidate->strengths_json;
-
                         $isWinner = $candidate->resume_score == $maxScore;
                     @endphp
 
@@ -65,7 +59,7 @@
                         </div>
 
                         <div class="py-8 space-y-8">
-                            {{-- Skills Section --}}
+                            {{-- Core Skills --}}
                             <div>
                                 <h4 class="text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-widest text-center">Core Skills</h4>
                                 <div class="flex flex-wrap justify-center gap-2">
@@ -78,25 +72,14 @@
                                     @endforelse
                                 </div>
                             </div>
-
-                            {{-- Strengths Section (Ganti dari AI Insight) --}}
+                            
+                            {{-- AI Summary Profile (Ganti Key Strengths yang kosong) --}}
                             <div>
-                                <h4 class="text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-widest text-center">Key Strengths</h4>
-                                <div class="space-y-3">
-                                    @forelse($strengths ?? [] as $strength)
-                                        <div class="flex items-start gap-3 bg-slate-950/40 p-3 rounded-xl border border-slate-800/50">
-                                            <svg class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                                            </svg>
-                                            <p class="text-xs text-slate-300 leading-relaxed">
-                                                {{ is_array($strength) ? ($strength['description'] ?? $strength['point'] ?? '-') : $strength }}
-                                            </p>
-                                        </div>
-                                    @empty
-                                        <div class="text-center p-4 bg-slate-950/20 rounded-xl border border-dashed border-slate-800">
-                                            <p class="text-xs text-slate-500 italic">No specific strengths identified</p>
-                                        </div>
-                                    @endforelse
+                                <h4 class="text-[10px] uppercase font-bold text-slate-500 mb-3 tracking-widest text-center">Candidate Summary</h4>
+                                <div class="bg-slate-950/40 rounded-2xl p-4 border border-slate-800/50">
+                                    <p class="text-xs text-slate-400 leading-relaxed italic text-center">
+                                        "{{ Str::limit($candidate->summary_profile ?? 'No specific analysis available.', 180) }}"
+                                    </p>
                                 </div>
                             </div>
                         </div>
