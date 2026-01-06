@@ -1,95 +1,96 @@
 <x-app-layout>
-    <div class="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100 relative overflow-hidden">
-        
-        {{-- Background Effects --}}
+    <div class="min-h-screen bg-slate-950 text-slate-100 py-12 relative overflow-hidden">
+        {{-- Background Effect --}}
         <div class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none"></div>
 
-        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             
-            {{-- Header --}}
-            <div class="mb-8 flex items-center justify-between">
+            <div class="flex justify-between items-center mb-10">
                 <div>
-                    <h1 class="text-3xl font-extrabold text-white">
-                        Comparison <span class="text-indigo-400">Result</span>
-                    </h1>
-                    <p class="text-slate-400 text-sm mt-1">
-                        Membandingkan {{ count($candidates) }} kandidat pilihan.
-                    </p>
+                    <h1 class="text-3xl font-extrabold text-white">Versus <span class="text-indigo-400">Comparison</span></h1>
+                    <p class="text-slate-400 text-sm mt-1">Menganalisis kualifikasi antara dua kandidat terbaik.</p>
                 </div>
-                <a href="{{ route('admin.cv.selection') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-medium transition-colors text-slate-300">
-                    &larr; Kembali Memilih
+                <a href="{{ route('admin.cv.selection') }}" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-semibold transition-all text-slate-300">
+                    &larr; Pilih Ulang
                 </a>
             </div>
 
-            {{-- GRID PERBANDINGAN --}}
-            <div class="grid grid-cols-1 md:grid-cols-{{ count($candidates) > 3 ? 3 : count($candidates) }} gap-6 items-start">
-                
-                @php
-                    $maxScore = $candidates->max('resume_score');
-                @endphp
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+                {{-- VS Badge --}}
+                <div class="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-indigo-600 rounded-full items-center justify-center font-black text-white shadow-[0_0_30px_rgba(79,70,229,0.4)] border-4 border-slate-950">
+                    VS
+                </div>
+
+                @php $maxScore = $candidates->max('resume_score'); @endphp
 
                 @foreach($candidates as $candidate)
                     @php
-                        $rawDivisions = $candidate->division_recommendations_json;
-                        $divisions = is_string($rawDivisions) ? json_decode($rawDivisions, true) : $rawDivisions;
-                        $divisions = $divisions ?? [];
-                        
+                        $divisions = is_string($candidate->division_recommendations_json) 
+                            ? json_decode($candidate->division_recommendations_json, true) 
+                            : $candidate->division_recommendations_json;
                         $isWinner = $candidate->resume_score == $maxScore;
                     @endphp
 
-                    <div class="relative flex flex-col bg-slate-900/60 backdrop-blur-xl border {{ $isWinner ? 'border-amber-500/50 shadow-2xl shadow-amber-500/10' : 'border-slate-800' }} rounded-3xl overflow-hidden transition-all">
+                    <div class="bg-slate-900/50 backdrop-blur-xl border {{ $isWinner ? 'border-amber-500/50 shadow-2xl shadow-amber-500/10' : 'border-slate-800' }} rounded-[2.5rem] p-8 transition-all hover:scale-[1.01]">
                         
+                        {{-- Winner Tag --}}
                         @if($isWinner)
-                            <div class="absolute top-0 inset-x-0 h-1 bg-amber-500"></div>
-                            <div class="absolute top-4 right-4 bg-amber-500 text-slate-900 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Best Score</div>
+                            <div class="flex justify-center mb-4">
+                                <span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                                    ⭐ Best Match
+                                </span>
+                            </div>
                         @endif
 
-                        <div class="p-6 text-center border-b border-slate-800/50">
-                            <div class="w-16 h-16 mx-auto rounded-2xl bg-slate-800 flex items-center justify-center text-2xl font-bold text-sky-400 mb-4 border border-slate-700">
+                        <div class="text-center border-b border-slate-800/50 pb-8">
+                            <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center text-3xl font-bold text-sky-400 mb-4 border border-slate-700 shadow-xl">
                                 {{ substr($candidate->cvSubmission->user->name, 0, 1) }}
                             </div>
-                            <h3 class="text-lg font-bold text-white truncate">{{ $candidate->cvSubmission->user->name }}</h3>
-                            <div class="text-[10px] text-slate-500 uppercase font-bold mt-1 tracking-widest">{{ $candidate->cvSubmission->analysis_mode }}</div>
+                            <h3 class="text-2xl font-bold text-white mb-1">{{ $candidate->cvSubmission->user->name }}</h3>
+                            <div class="text-[10px] text-slate-500 uppercase font-black tracking-widest">{{ $candidate->cvSubmission->analysis_mode }}</div>
                             
-                            <div class="mt-4">
-                                <div class="text-4xl font-black {{ $isWinner ? 'text-amber-400' : 'text-white' }}">
+                            <div class="mt-6">
+                                <div class="text-6xl font-black {{ $isWinner ? 'text-amber-400' : 'text-white' }}">
                                     {{ number_format($candidate->resume_score, 1) }}
                                 </div>
-                                <div class="text-[10px] uppercase font-bold text-slate-500">Resume Score</div>
+                                <div class="text-xs uppercase font-bold text-slate-500 mt-1">Resume Score</div>
                             </div>
                         </div>
 
-                        <div class="p-6 space-y-6">
+                        <div class="py-8 space-y-8">
                             {{-- Division --}}
                             <div>
-                                <h4 class="text-[10px] uppercase font-bold text-slate-500 mb-3 tracking-widest">Recommended Division</h4>
-                                <div class="flex flex-wrap gap-2">
-                                    @foreach(array_slice($divisions, 0, 3) as $div)
-                                        <span class="px-2 py-1 rounded-md text-[10px] bg-slate-800 text-slate-300 border border-slate-700">
+                                <h4 class="text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-tighter text-center">Division Recommendations</h4>
+                                <div class="flex flex-wrap justify-center gap-2">
+                                    @forelse(array_slice($divisions ?? [], 0, 3) as $div)
+                                        <span class="px-3 py-1.5 rounded-xl text-xs bg-slate-800 text-slate-300 border border-slate-700 font-medium">
                                             {{ is_array($div) ? ($div['division_name'] ?? '-') : $div }}
                                         </span>
-                                    @endforeach
+                                    @empty
+                                        <span class="text-slate-600 text-xs italic">No data</span>
+                                    @endforelse
                                 </div>
                             </div>
 
-                            {{-- AI Summary --}}
+                            {{-- Summary --}}
                             <div>
-                                <h4 class="text-[10px] uppercase font-bold text-slate-500 mb-2 tracking-widest">AI Profile Summary</h4>
-                                <p class="text-xs text-slate-400 leading-relaxed italic">
-                                    "{{ Str::limit($candidate->summary_profile ?? 'No summary provided.', 150) }}"
-                                </p>
+                                <h4 class="text-[10px] uppercase font-bold text-slate-500 mb-3 tracking-tighter text-center">AI Insights</h4>
+                                <div class="bg-slate-950/40 rounded-2xl p-4 border border-slate-800/50">
+                                    <p class="text-sm text-slate-400 leading-relaxed italic text-center">
+                                        "{{ Str::limit($candidate->summary_profile ?? 'No analysis available.', 180) }}"
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="p-4 bg-slate-950/40 border-t border-slate-800">
-                            <a href="{{ route('admin.cv.result', $candidate->id) }}" class="block w-full py-2 text-center text-xs font-bold text-sky-400 hover:text-sky-300 transition-colors">
-                                View Detailed Analysis &rarr;
+                        <div class="pt-2">
+                            <a href="{{ route('admin.cv.result', $candidate->id) }}" class="group block w-full py-4 bg-slate-800 hover:bg-indigo-600 rounded-2xl text-center text-sm font-bold text-white transition-all shadow-lg">
+                                View Full Profile <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
                             </a>
                         </div>
                     </div>
                 @endforeach
             </div>
-
         </div>
     </div>
 </x-app-layout>
