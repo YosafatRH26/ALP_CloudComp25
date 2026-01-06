@@ -2,31 +2,58 @@
     <div class="min-h-screen bg-slate-950 text-slate-100 py-12 relative">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             
+            {{-- Header & Filter Section --}}
+            <div class="mb-10 bg-slate-900/50 p-8 rounded-[2rem] border border-slate-800">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white tracking-tight">Select <span class="text-indigo-400">Candidates</span></h1>
+                        <p class="text-slate-400 mt-1 text-sm">Pilih <strong>tepat 2</strong> kandidat dari kategori yang sama atau berbeda.</p>
+                    </div>
+
+                    {{-- Form Filter --}}
+                    <form action="{{ route('admin.cv.selection') }}" method="GET" class="flex flex-wrap items-end gap-3">
+                        <div class="w-full sm:w-64">
+                            <label class="text-[10px] uppercase font-bold text-slate-500 mb-2 block ml-1">Filter by Category</label>
+                            <select name="division" onchange="this.form.submit()" 
+                                    class="w-full bg-slate-950 border-slate-800 rounded-xl text-sm text-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                                <option value="">All Categories</option>
+                                <option value="Marketing" {{ request('division') == 'Marketing' ? 'selected' : '' }}>Marketing</option>
+                                <option value="Software Engineer" {{ request('division') == 'Software Engineer' ? 'selected' : '' }}>Software Engineer</option>
+                                <option value="Human Resources" {{ request('division') == 'Human Resources' ? 'selected' : '' }}>Human Resources</option>
+                                <option value="Finance" {{ request('division') == 'Finance' ? 'selected' : '' }}>Finance</option>
+                                <option value="Sales" {{ request('division') == 'Sales' ? 'selected' : '' }}>Sales</option>
+                            </select>
+                        </div>
+                        @if(request('division'))
+                            <a href="{{ route('admin.cv.selection') }}" class="px-4 py-2.5 text-sm text-slate-500 hover:text-white transition-colors">Reset</a>
+                        @endif
+                    </form>
+                </div>
+            </div>
+
             <form action="{{ route('admin.cv.compare') }}" method="POST" id="compareForm">
                 @csrf
                 
-                {{-- Header & Button Group --}}
-                <div class="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-900/50 p-8 rounded-[2rem] border border-slate-800">
-                    <div>
-                        <h1 class="text-3xl font-bold text-white tracking-tight">Select <span class="text-indigo-400">Candidates</span></h1>
-                        <p class="text-slate-400 mt-1 text-sm">Klik kartu untuk memilih. Pilih <strong>tepat 2</strong> kandidat.</p>
-                    </div>
-
-                    <div class="flex items-center gap-4">
-                        <div class="text-right mr-2">
-                            <p class="text-[10px] text-slate-500 uppercase font-bold">Selected</p>
-                            <p class="text-xl font-black text-white"><span id="countSelected" class="text-indigo-400">0</span>/2</p>
+                {{-- Action Bar (Sticky Info) --}}
+                <div class="mb-8 flex items-center justify-between bg-indigo-500/5 border border-indigo-500/20 p-6 rounded-2xl">
+                    <div class="flex items-center gap-6">
+                        <div class="text-sm text-slate-400">
+                            Showing: <span class="text-white font-bold">{{ count($candidates) }}</span> Candidates
                         </div>
-                        <button type="submit" id="compareBtn" disabled 
-                                class="bg-slate-800 text-slate-500 font-bold py-4 px-8 rounded-2xl transition-all cursor-not-allowed opacity-50 shadow-xl">
-                            Compare Now
-                        </button>
+                        <div class="h-4 w-px bg-slate-800"></div>
+                        <div class="text-sm">
+                            Selected: <span id="countSelected" class="text-indigo-400 font-black">0</span><span class="text-slate-500">/2</span>
+                        </div>
                     </div>
+                    <button type="submit" id="compareBtn" disabled 
+                            class="bg-slate-800 text-slate-500 font-bold py-3 px-10 rounded-xl transition-all cursor-not-allowed opacity-50 shadow-xl">
+                        Compare Now
+                    </button>
                 </div>
 
                 {{-- Grid Card --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @foreach($candidates as $candidate)
+                    @forelse($candidates as $candidate)
                         <div class="cv-card relative bg-slate-900/40 border-2 border-slate-800 rounded-[2rem] p-6 cursor-pointer transition-all duration-200 hover:border-slate-600 group" 
                              data-id="{{ $candidate->id }}">
                             
@@ -55,7 +82,11 @@
                                 <p class="text-[10px] text-slate-500">{{ $candidate->created_at->format('d M Y') }}</p>
                             </div>
                         </div>
-                    @endforeach
+                    @empty
+                        <div class="col-span-full py-20 text-center bg-slate-900/20 border border-dashed border-slate-800 rounded-[2rem]">
+                            <p class="text-slate-500">Tidak ada kandidat ditemukan untuk kategori ini.</p>
+                        </div>
+                    @endforelse
                 </div>
             </form>
         </div>
@@ -74,10 +105,8 @@
                     const indicator = this.querySelector('.indicator');
                     const dot = this.querySelector('.dot');
 
-                    // Toggle Checkbox
                     checkbox.checked = !checkbox.checked;
 
-                    // Update UI Card
                     if (checkbox.checked) {
                         this.classList.add('border-indigo-500', 'bg-indigo-500/10', 'ring-1', 'ring-indigo-500/50');
                         this.classList.remove('border-slate-800');
