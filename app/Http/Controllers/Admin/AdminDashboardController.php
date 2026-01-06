@@ -8,13 +8,12 @@ use Illuminate\Http\Request;
 
 class AdminDashboardController extends Controller
 {
-    // Fungsi Menampilkan Dashboard & Filter
+    // Halaman Dashboard (Filter & View Only)
     public function index(Request $request)
     {
         $selectedMode = $request->analysis_mode;
         $selectedDivision = $request->division;
 
-        // Query Utama
         $query = CvAnalysis::with(['cvSubmission.user'])
             ->whereHas('cvSubmission', function ($q) use ($selectedMode) {
                 // 1. WAJIB: Hanya ambil CV yang sudah di-Push ke Admin
@@ -50,7 +49,21 @@ class AdminDashboardController extends Controller
         ));
     }
 
-    // Fungsi Logika Compare Candidate
+    // Halaman Pemilihan untuk Compare (BARU)
+    public function compareSelection()
+    {
+        $analysis = CvAnalysis::with(['cvSubmission.user'])
+            ->whereHas('cvSubmission', function ($q) {
+                $q->where('is_submitted_to_admin', true);
+            })
+            ->orderByDesc('resume_score')
+            ->get();
+
+        // Menggunakan view: resources/views/admin/compare-selection.blade.php
+        return view('admin.compare-selection', compact('analysis'));
+    }
+
+    // Proses Logika Compare
     public function compare(Request $request)
     {
         // 1. Validasi: Pastikan user memilih minimal 2 CV
@@ -65,10 +78,11 @@ class AdminDashboardController extends Controller
         // 2. Ambil data kandidat yang dipilih
         $candidates = CvAnalysis::with('cvSubmission.user')
                         ->whereIn('id', $request->cv_ids)
-                        ->orderByDesc('resume_score')
+                        ->orderByDesc('resume_score') // Urutkan biar yang skor tinggi di kiri
                         ->get();
 
-        // 3. Tampilkan View Compare
-        return view('admin.compare', compact('candidates'));
+        // 3. Tampilkan View Compare Result
+        // Menggunakan view: resources/views/admin/compare-result.blade.php
+        return view('admin.compare-result', compact('candidates'));
     }
 }

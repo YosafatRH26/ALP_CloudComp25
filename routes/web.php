@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CvController;
-use App\Http\Controllers\Admin\AdminCvController; // Jika tidak dipakai bisa dihapus
 use App\Http\Controllers\Admin\AdminDashboardController;
 
 Route::get('/', function () {
@@ -36,13 +35,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:admin')
         ->group(function () {
             
-            // Dashboard
+            // 1. DASHBOARD (View Only)
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-            // Compare Candidates (POST Method Wajib)
+            // 2. COMPARE CV (Selection Page) - BARU
+            Route::get('/cv/compare-selection', [AdminDashboardController::class, 'compareSelection'])->name('cv.selection');
+            
+            // 3. PROSES COMPARE (Action)
             Route::post('/cv/compare', [AdminDashboardController::class, 'compare'])->name('cv.compare');
 
-            // View CV Detail (Admin Mode)
+            // 4. VIEW DETAIL
             Route::get('/cv/view/{analysis}', [CvController::class, 'result'])->name('cv.result'); 
         });
 });
