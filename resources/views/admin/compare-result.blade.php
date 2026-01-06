@@ -8,7 +8,7 @@
             <div class="flex justify-between items-center mb-10">
                 <div>
                     <h1 class="text-3xl font-extrabold text-white">Versus <span class="text-indigo-400">Comparison</span></h1>
-                    <p class="text-slate-400 text-sm mt-1">Menganalisis kualifikasi antara dua kandidat terbaik.</p>
+                    <p class="text-slate-400 text-sm mt-1">Perbandingan kompetensi dan keunggulan kandidat pilihan.</p>
                 </div>
                 <a href="{{ route('admin.cv.selection') }}" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-semibold transition-all text-slate-300">
                     &larr; Pilih Ulang
@@ -25,9 +25,16 @@
 
                 @foreach($candidates as $candidate)
                     @php
-                        $divisions = is_string($candidate->division_recommendations_json) 
-                            ? json_decode($candidate->division_recommendations_json, true) 
-                            : $candidate->division_recommendations_json;
+                        // Helper untuk decode JSON Skills
+                        $skills = is_string($candidate->main_skills_json) 
+                            ? json_decode($candidate->main_skills_json, true) 
+                            : $candidate->main_skills_json;
+                        
+                        // Helper untuk decode JSON Strengths
+                        $strengths = is_string($candidate->strengths_json) 
+                            ? json_decode($candidate->strengths_json, true) 
+                            : $candidate->strengths_json;
+
                         $isWinner = $candidate->resume_score == $maxScore;
                     @endphp
 
@@ -58,34 +65,45 @@
                         </div>
 
                         <div class="py-8 space-y-8">
-                            {{-- Division --}}
+                            {{-- Skills Section --}}
                             <div>
-                                <h4 class="text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-tighter text-center">Division Recommendations</h4>
+                                <h4 class="text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-widest text-center">Core Skills</h4>
                                 <div class="flex flex-wrap justify-center gap-2">
-                                    @forelse(array_slice($divisions ?? [], 0, 3) as $div)
-                                        <span class="px-3 py-1.5 rounded-xl text-xs bg-slate-800 text-slate-300 border border-slate-700 font-medium">
-                                            {{ is_array($div) ? ($div['division_name'] ?? '-') : $div }}
+                                    @forelse($skills ?? [] as $skill)
+                                        <span class="px-3 py-1 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded-lg text-[11px] font-medium">
+                                            {{ is_array($skill) ? ($skill['name'] ?? $skill['skill_name'] ?? '-') : $skill }}
                                         </span>
                                     @empty
-                                        <span class="text-slate-600 text-xs italic">No data</span>
+                                        <span class="text-slate-600 text-xs italic">No skills listed</span>
                                     @endforelse
                                 </div>
                             </div>
 
-                            {{-- Summary --}}
+                            {{-- Strengths Section (Ganti dari AI Insight) --}}
                             <div>
-                                <h4 class="text-[10px] uppercase font-bold text-slate-500 mb-3 tracking-tighter text-center">AI Insights</h4>
-                                <div class="bg-slate-950/40 rounded-2xl p-4 border border-slate-800/50">
-                                    <p class="text-sm text-slate-400 leading-relaxed italic text-center">
-                                        "{{ Str::limit($candidate->summary_profile ?? 'No analysis available.', 180) }}"
-                                    </p>
+                                <h4 class="text-[10px] uppercase font-bold text-slate-500 mb-4 tracking-widest text-center">Key Strengths</h4>
+                                <div class="space-y-3">
+                                    @forelse($strengths ?? [] as $strength)
+                                        <div class="flex items-start gap-3 bg-slate-950/40 p-3 rounded-xl border border-slate-800/50">
+                                            <svg class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            <p class="text-xs text-slate-300 leading-relaxed">
+                                                {{ is_array($strength) ? ($strength['description'] ?? $strength['point'] ?? '-') : $strength }}
+                                            </p>
+                                        </div>
+                                    @empty
+                                        <div class="text-center p-4 bg-slate-950/20 rounded-xl border border-dashed border-slate-800">
+                                            <p class="text-xs text-slate-500 italic">No specific strengths identified</p>
+                                        </div>
+                                    @endforelse
                                 </div>
                             </div>
                         </div>
 
                         <div class="pt-2">
                             <a href="{{ route('admin.cv.result', $candidate->id) }}" class="group block w-full py-4 bg-slate-800 hover:bg-indigo-600 rounded-2xl text-center text-sm font-bold text-white transition-all shadow-lg">
-                                View Full Profile <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+                                View Full Profile Details <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
                             </a>
                         </div>
                     </div>
